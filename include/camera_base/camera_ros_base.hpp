@@ -75,9 +75,9 @@ class CameraRosBase {
    * @param time Acquisition time stamp
    */
   void PublishCamera(const ros::Time& time) {
-    const auto image_msg = boost::make_shared<sensor_msgs::Image>();
+    const auto image_msg = std::make_shared<sensor_msgs::Image>();
     const auto cinfo_msg =
-        boost::make_shared<sensor_msgs::CameraInfo>(cinfo_mgr_.getCameraInfo());
+        std::make_shared<sensor_msgs::CameraInfo>(cinfo_mgr_.getCameraInfo());
     image_msg->header.frame_id = frame_id_;
     image_msg->header.stamp = time;
     if (Grab(image_msg, cinfo_msg)) {
@@ -91,7 +91,7 @@ class CameraRosBase {
 
   void Publish(const sensor_msgs::ImagePtr& image_msg) {
     const auto cinfo_msg =
-        boost::make_shared<sensor_msgs::CameraInfo>(cinfo_mgr_.getCameraInfo());
+        std::make_shared<sensor_msgs::CameraInfo>(cinfo_mgr_.getCameraInfo());
     // Update camera info header
     image_msg->header.frame_id = frame_id_;
     cinfo_msg->header = image_msg->header;

@@ -32,8 +32,7 @@ class CameraNodeBase {
    * acquisition automatically when the server is initialized
    */
   void Run() {
-    cfg_server_.setCallback(
-        boost::bind(&CameraNodeBase::ConfigCb, this, _1, _2));
+    cfg_server_.setCallback(std::bind(&CameraNodeBase::ConfigCb, this, _1, _2));
   }
 
   /**
