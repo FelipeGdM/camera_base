@@ -1,9 +1,7 @@
 #pragma once
 
-#include <dynamic_reconfigure/server.h>
-#include <ros/ros.h>
-
 #include <memory>
+#include <rclcpp/rclcpp.hpp>
 #include <thread>
 
 #include "camera_base/camera_ros_base.hpp"
