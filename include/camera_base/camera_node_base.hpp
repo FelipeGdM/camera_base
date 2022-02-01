@@ -13,16 +13,15 @@ namespace camera_base {
  * A base class that implements a ros node for a camera
  */
 template <typename ConfigType>
-class CameraNodeBase {
+class CameraNodeBase : public rclcpp::Node {
  public:
-  explicit CameraNodeBase(const ros::NodeHandle& pnh);
+  explicit CameraNodeBase(const std::string& node_name);
 
   CameraNodeBase() = delete;
   CameraNodeBase(const CameraNodeBase&) = delete;
   CameraNodeBase& operator=(const CameraNodeBase&) = delete;
   virtual ~CameraNodeBase() = default;
 
-  const ros::NodeHandle& pnh() const { return pnh_; }
   bool is_acquire() const { return is_acquire_; }
 
   /**
@@ -37,7 +36,7 @@ class CameraNodeBase {
    */
   void End();
 
-  void Sleep();
+  void Sleep() const;
 
   /**
    * @brief ConfigCb Dynamic reconfigure callback
@@ -46,7 +45,7 @@ class CameraNodeBase {
    * Entering this callback will stop the acquisition thread, do the
    * reconfiguration and restart acquisition thread
    */
-  void ConfigCb(ConfigType& config, int level);
+  void ConfigCb(ConfigType& config);
 
   /**
    * @brief Acquire Do acquisition here
@@ -67,10 +66,8 @@ class CameraNodeBase {
   void Stop();
 
   bool is_acquire_;
-  ros::NodeHandle pnh_;
-  std::unique_ptr<ros::Rate> rate_;
+  std::unique_ptr<rclcpp::Rate> rate_;
   std::unique_ptr<std::thread> acquire_thread_;
-  dynamic_reconfigure::Server<ConfigType> cfg_server_;
 };
 
 }  // namespace camera_base
