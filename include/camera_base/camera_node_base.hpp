@@ -15,8 +15,7 @@ namespace camera_base {
 template <typename ConfigType>
 class CameraNodeBase {
  public:
-  explicit CameraNodeBase(const ros::NodeHandle& pnh)
-      : is_acquire_(false), pnh_(pnh), cfg_server_(pnh) {}
+  explicit CameraNodeBase(const ros::NodeHandle& pnh);
 
   CameraNodeBase() = delete;
   CameraNodeBase(const CameraNodeBase&) = delete;
@@ -31,16 +30,14 @@ class CameraNodeBase {
    * This will setup the dynamic reconfigure server, this will start the
    * acquisition automatically when the server is initialized
    */
-  void Run() {
-    cfg_server_.setCallback(std::bind(&CameraNodeBase::ConfigCb, this, _1, _2));
-  }
+  void Run();
 
   /**
    * @brief End
    */
-  void End() { Stop(); }
+  void End();
 
-  void Sleep() const { rate_->sleep(); }
+  void Sleep();
 
   /**
    * @brief ConfigCb Dynamic reconfigure callback
@@ -49,18 +46,7 @@ class CameraNodeBase {
    * Entering this callback will stop the acquisition thread, do the
    * reconfiguration and restart acquisition thread
    */
-  void ConfigCb(ConfigType& config, int level) {
-    if (level < 0) {
-      ROS_INFO("%s: %s", pnh().getNamespace().c_str(),
-               "Initializing reconfigure server");
-    }
-    if (is_acquire()) {
-      Stop();
-    }
-    Setup(config);
-    SetRate(config.fps);
-    Start();
-  }
+  void ConfigCb(ConfigType& config, int level);
 
   /**
    * @brief Acquire Do acquisition here
@@ -74,18 +60,11 @@ class CameraNodeBase {
   virtual void Setup(ConfigType& config) = 0;
 
  private:
-  void SetRate(double fps) { rate_.reset(new ros::Rate(fps)); }
+  void SetRate(double fps);
 
-  void Start() {
-    is_acquire_ = true;
-    acquire_thread_.reset(new std::thread(&CameraNodeBase::Acquire, this));
-  }
+  void Start();
 
-  void Stop() {
-    if (!is_acquire_) return;
-    is_acquire_ = false;
-    acquire_thread_->join();
-  }
+  void Stop();
 
   bool is_acquire_;
   ros::NodeHandle pnh_;
