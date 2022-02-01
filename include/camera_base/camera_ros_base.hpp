@@ -10,29 +10,17 @@
 #include <sensor_msgs/msg/image.hpp>
 
 namespace camera_base {
-
-/**
- * @brief getParam Util function for getting ros parameters under nodehandle
- * @param nh Node handle
- * @param name Parameter name
- * @return Parameter value
- */
-template <typename T>
-T getParam(const ros::NodeHandle& nh, const std::string& name) {
-  T value{};
-  if (!nh.getParam(name, value)) {
-    ROS_ERROR("Cannot find parameter: %s", name.c_str());
-  }
-  return value;
-}
-
 /**
  * @brief The CameraRosBase class
  * This class implements a ros camera
  */
 class CameraRosBase {
  public:
-  explicit CameraRosBase(const ros::NodeHandle& pnh,
+  explicit CameraRosBase(rclcpp::Node::SharedPtr node,
+                         const std::string& frame_id_ = std::string(),
+                         const std::string& identifier_ = std::string(),
+                         const std::string& camera_name = std::string(),
+                         const std::string& calib_url = std::string(),
                          const std::string& prefix = std::string());
 
   CameraRosBase() = delete;
@@ -56,29 +44,28 @@ class CameraRosBase {
    * @brief PublishCamera Publish a camera topic with Image and CameraInfo
    * @param time Acquisition time stamp
    */
-  void PublishCamera(const ros::Time& time);
+  void PublishCamera(const rclcpp::Time& time);
 
-  void Publish(const sensor_msgs::ImagePtr& image_msg);
+  void Publish(const sensor_msgs::msg::Image::SharedPtr& image_msg);
 
   /**
    * @brief Grab Fill image_msg and cinfo_msg from low level camera driver
    * @param image_msg Ros message ImagePtr
    * @return True if successful
    */
-  virtual bool Grab(const sensor_msgs::ImagePtr& image_msg,
-                    const sensor_msgs::CameraInfoPtr& cinfo_msgs = nullptr) = 0;
+  virtual bool Grab(
+      const sensor_msgs::msg::Image::SharedPtr& image_msg,
+      const sensor_msgs::msg::CameraInfo::SharedPtr& cinfo_msgs = nullptr) = 0;
 
  private:
-  ros::NodeHandle pnh_;
-  ros::NodeHandle cnh_;
   image_transport::ImageTransport it_;
   image_transport::CameraPublisher camera_pub_;
   camera_info_manager::CameraInfoManager cinfo_mgr_;
   double fps_;
-  diagnostic_updater::Updater diagnostic_updater_;
-  diagnostic_updater::TopicDiagnostic topic_diagnostic_;
   std::string frame_id_;
   std::string identifier_;
+  diagnostic_updater::Updater diagnostic_updater_;
+  diagnostic_updater::TopicDiagnostic topic_diagnostic_;
 };
 
 }  // namespace camera_base
