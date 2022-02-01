@@ -6,7 +6,7 @@
 #include <memory>
 #include <thread>
 
-#include "camera_base/camera_ros_base.h"
+#include "camera_base/camera_ros_base.hpp"
 
 namespace camera_base {
 
