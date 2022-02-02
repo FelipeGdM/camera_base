@@ -1,22 +1,30 @@
 cmake_minimum_required(VERSION 3.10)
 project(camera_base)
 
-find_package(
-  catkin REQUIRED COMPONENTS roscpp camera_info_manager diagnostic_updater
-                             dynamic_reconfigure image_transport sensor_msgs)
+add_definitions(-std=c++14 -Wall -Wextra -Wno-unknown-pragmas)
 
-catkin_package(
-  INCLUDE_DIRS
+find_package(ament_cmake REQUIRED)
+
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
+find_package(camera_info_manager REQUIRED)
+
+include_directories(
   include
-  LIBRARIES
-  CATKIN_DEPENDS
-  camera_info_manager
-  diagnostic_updater
-  dynamic_reconfigure
-  image_transport
-  roscpp
-  sensor_msgs
-  DEPENDS)
+)
 
-install(DIRECTORY include/${PROJECT_NAME}/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+ament_export_dependencies(
+  camera_info_manager
+  diagnostic_msgs
+  sensor_msgs
+  image_transport
+  builtin_interfaces
+)
+
+ament_export_include_directories(include)
+
+install(DIRECTORY include/
+  DESTINATION include)
+
+ament_package()
