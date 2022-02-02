@@ -13,17 +13,16 @@ namespace camera_base {
  * A base class that implements a ros node for a camera
  */
 template <typename ConfigType>
-class CameraNodeBase {
+class CameraNodeBase : public rclcpp::Node {
  public:
-  explicit CameraNodeBase(const ros::NodeHandle& pnh)
-      : is_acquire_(false), pnh_(pnh), cfg_server_(pnh) {}
+  explicit CameraNodeBase(const std::string& node_name)
+      : Node(node_name), is_acquire_(false) {}
 
   CameraNodeBase() = delete;
   CameraNodeBase(const CameraNodeBase&) = delete;
   CameraNodeBase& operator=(const CameraNodeBase&) = delete;
   virtual ~CameraNodeBase() = default;
 
-  const ros::NodeHandle& pnh() const { return pnh_; }
   bool is_acquire() const { return is_acquire_; }
 
   /**
@@ -31,9 +30,7 @@ class CameraNodeBase {
    * This will setup the dynamic reconfigure server, this will start the
    * acquisition automatically when the server is initialized
    */
-  void Run() {
-    cfg_server_.setCallback(std::bind(&CameraNodeBase::ConfigCb, this, _1, _2));
-  }
+  void Run() { ConfigCb(); }
 
   /**
    * @brief End
@@ -49,18 +46,15 @@ class CameraNodeBase {
    * Entering this callback will stop the acquisition thread, do the
    * reconfiguration and restart acquisition thread
    */
-  void ConfigCb(ConfigType& config, int level) {
-    if (level < 0) {
-      ROS_INFO("%s: %s", pnh().getNamespace().c_str(),
-               "Initializing reconfigure server");
-    }
+  void ConfigCb(ConfigType& config) {
+    RCLCPP_INFO_STREAM(this->get_logger(), "Initializing reconfigure server");
     if (is_acquire()) {
       Stop();
     }
     Setup(config);
     SetRate(config.fps);
     Start();
-  }
+  };
 
   /**
    * @brief Acquire Do acquisition here
@@ -74,7 +68,7 @@ class CameraNodeBase {
   virtual void Setup(ConfigType& config) = 0;
 
  private:
-  void SetRate(double fps) { rate_.reset(new ros::Rate(fps)); }
+  void SetRate(double fps) { rate_.reset(new rclcpp::Rate(fps)); }
 
   void Start() {
     is_acquire_ = true;
@@ -88,10 +82,8 @@ class CameraNodeBase {
   }
 
   bool is_acquire_;
-  ros::NodeHandle pnh_;
-  std::unique_ptr<ros::Rate> rate_;
+  std::unique_ptr<rclcpp::Rate> rate_;
   std::unique_ptr<std::thread> acquire_thread_;
-  dynamic_reconfigure::Server<ConfigType> cfg_server_;
 };
 
 }  // namespace camera_base
